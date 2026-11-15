@@ -5,6 +5,8 @@ Assumptions:
 - Series R-L-DC circuit, with Vdc opposing the AC source.
 - Sinusoidal AC source: v_ac(t) = sqrt(2) * Vac_rms * sin(2*pi*f*t).
 - Periodic steady-state operation.
+
+-- by Bahaa Alsaeed
 """
 
 from __future__ import annotations
@@ -105,7 +107,8 @@ def calculate_circuit(
 
     if beta is None:
         raise ValueError(
-            "Could not find the end of the conduction interval within the search range. Try different practical component values."
+            "Could not find the end of the conduction interval within the search range."
+            " Try different practical component values."
         )
 
     t_beta = beta / omega
@@ -193,8 +196,8 @@ def make_plot(
     current_axis = voltage_axis.twinx()
 
     voltage_axis.plot(time * 1000.0, voltage_ac, label="AC voltage", linewidth=1.7)
-    voltage_axis.axhline(dc_voltage, linestyle="--", linewidth=1.3, label="DC voltage magnitude")
-    current_axis.plot(time * 1000.0, current_values, label="Current", linewidth=2.0)
+    voltage_axis.axhline(dc_voltage, linestyle="--", linewidth=1.3, label="DC voltage magnitude", color='green')
+    current_axis.plot(time * 1000.0, current_values, label="Current", linewidth=2.0, color='red')
 
     voltage_axis.set_xlabel("Time (ms)")
     voltage_axis.set_ylabel("Voltage (V)")
@@ -214,16 +217,23 @@ def make_plot(
 # ------------------------------------
 st.set_page_config(page_title="RL Diode Circuit Calculator", page_icon="⚡", layout="wide")
 st.title("RL Diode Circuit Calculator")
-st.caption("Current, power, and power factor analysis of a half-wave rectifier with an RL load and an opposing DC source.")
+st.caption(
+    "Current, power,"
+    " and power factor analysis of a half-wave rectifier with an RL load and an opposing DC source.")
 
 with st.sidebar:
     st.header("Circuit Parameters")
     with st.form("circuit_inputs"):
-        resistance = st.number_input("Resistance R (Ω)", min_value=0.001, value=2.0, step=0.1, format="%.4f")
-        inductance_mh = st.number_input("Inductance L (mH)", min_value=0.001, value=20.0, step=1.0, format="%.4f")
-        dc_voltage = st.number_input("DC Source Voltage Vdc (V)", min_value=0.0, value=100.0, step=5.0, format="%.4f")
-        ac_rms_voltage = st.number_input("AC Source Voltage (RMS) (V)", min_value=0.001, value=120.0, step=5.0, format="%.4f")
-        frequency_hz = st.number_input("Frequency f (Hz)", min_value=0.001, value=60.0, step=1.0, format="%.4f")
+        resistance = st.number_input(
+            "Resistance R (Ω)", min_value=0.001, value=2.0, step=0.1, format="%.4f")
+        inductance_mh = st.number_input(
+            "Inductance L (mH)", min_value=0.001, value=20.0, step=1.0, format="%.4f")
+        dc_voltage = st.number_input(
+            "DC Source Voltage Vdc (V)", min_value=0.0, value=100.0, step=5.0, format="%.4f")
+        ac_rms_voltage = st.number_input(
+            "AC Source Voltage (RMS) (V)", min_value=0.001, value=120.0, step=5.0, format="%.4f")
+        frequency_hz = st.number_input(
+            "Frequency f (Hz)", min_value=0.001, value=60.0, step=1.0, format="%.4f")
         submitted = st.form_submit_button("Calculate", type="primary", use_container_width=True)
 
     st.divider()
@@ -253,7 +263,8 @@ if st.session_state.last_submitted:
 
         if result is None:
             st.warning(
-                "The diode does not conduct with these values because the AC peak voltage does not exceed the opposing DC source voltage. "
+                "The diode does not conduct with these values because"
+                " the AC peak voltage does not exceed the opposing DC source voltage. "
                 f"قمة AC = {math.sqrt(2) * ac_rms_voltage:.4f} V، بينما Vdc = {dc_voltage:.4f} V."
             )
         else:
@@ -269,10 +280,12 @@ if st.session_state.last_submitted:
                 st.latex(
                     rf"i(t)= {result.im:.5f}\sin({result.omega:.5f}t-"
                     rf"{result.phi:.5f})-{dc_voltage / resistance:.5f}"
-                    rf"+{result.k_constant:.5f}e^{{-{resistance / inductance_h:.5f}(t-{result.t_alpha:.7f})}}"
+                    rf"+{result.k_constant:.5f}e^{{-{resistance /
+                                                     inductance_h:.5f}(t-{result.t_alpha:.7f})}}"
                 )
                 st.markdown(
-                    "This expression is valid only while the diode is conducting. The current is zero outside the conduction interval."
+                    "This expression is valid only while the diode is conducting."
+                    " The current is zero outside the conduction interval."
                 )
                 st.latex(
                     rf"t_\alpha={result.t_alpha * 1000:.5f}\;ms"
@@ -301,7 +314,8 @@ if st.session_state.last_submitted:
                 st.markdown("### (c) DC Source Absorbed Power")
                 st.latex(r"P_{dc}=V_{dc} I_{avg}")
                 st.metric("DC Source Absorbed Power", f"{result.p_dc:.4f} W")
-                st.caption("The positive sign indicates that the DC source absorbs power under the assumed polarity.")
+                st.caption("The positive sign indicates that the DC source absorbs power"
+                           " under the assumed polarity.")
 
             # (d) AC power and power factor
             with st.container(border=True):
@@ -345,4 +359,5 @@ else:
     st.info("Enter the circuit parameters in the sidebar, then click Calculate.")
 
 st.divider()
-st.caption("This model assumes an ideal diode and does not include diode forward voltage, source resistance, or inductor losses.")
+st.caption("This model assumes an ideal diode and does not include diode forward voltage,"
+           " source resistance, or inductor losses.")
